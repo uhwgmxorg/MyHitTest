@@ -4,6 +4,7 @@
 /*   A smal sample for a WPF Hit-Test                                         */
 /*                                                                            */
 /*   21.5.2014 0.0.0.0 uhwgmxorg Start                                        */
+/*   23.6.2014 0.0.0.0 uhwgmxorg Now moving dots with the right mouse button  */
 /*                                                                            */
 /******************************************************************************/
 using System;
@@ -31,6 +32,7 @@ namespace MyHitTest
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
+        bool _hit = false;
         MyVisualHost _visualHost = new MyVisualHost();
 
         public double DotSize { get; set; }
@@ -77,6 +79,7 @@ namespace MyHitTest
         {
             Console.Beep();
             Message = "Hit !!";
+            _hit = true;
         }
 
         /// <summary>
@@ -87,7 +90,13 @@ namespace MyHitTest
         /// <param name="e"></param>
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (!CheckBoxAdd) return;
+            if (!CheckBoxAdd)
+            {
+                if(!_hit)
+                    Message = "Hit fail";
+                _hit = false;
+                return;
+            }
             var pos = Mouse.GetPosition(this);
             DotSize = 10;
             DotColor = "#FFFF0000";
@@ -102,6 +111,31 @@ namespace MyHitTest
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void Window_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+        }
+
+        /// <summary>
+        /// MyCanvas_MouseMove
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void MyCanvas_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (CheckBoxAdd) return;
+            var mea = e;
+            if (mea.RightButton == MouseButtonState.Released) return;
+            double x = e.GetPosition((IInputElement)((RoutedEventArgs)(e)).Source).X;
+            double y = e.GetPosition((IInputElement)((RoutedEventArgs)(e)).Source).Y;
+
+            _visualHost.MoveDot(new Point(x, y), DotSize, (SolidColorBrush)(new BrushConverter().ConvertFrom(DotColor)));
+        }
+
+        /// <summary>
+        /// Button_Clear_Click
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Button_Clear_Click(object sender, RoutedEventArgs e)
         {
             _visualHost.Clear();
             Message = "Clear";
